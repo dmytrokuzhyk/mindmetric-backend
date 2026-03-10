@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindMetric — IQ Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+:root {
+  --bg: #08080e;
+  --surface: #0f0f18;
+  --surface2: #15151f;
+  --surface3: #1c1c2a;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #7c6dfa;
+  --accent2: #a78bfa;
+  --glow: rgba(124,109,250,0.25);
+  --text: #eeeef8;
+  --muted: #6b6b85;
+  --muted2: #9898b0;
+  --success: #34d399;
+  --danger: #f87171;
+  --gold: #f59e0b;
+  --gold2: #fbbf24;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NOISE TEXTURE */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:0;
+  opacity:0.4;
+}
+
+/* NAV */
+nav {
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:100;
+  padding:20px 48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,8,14,0.85);
+  backdrop-filter: blur(20px);
+}
+.nav-logo {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.3rem;
+  letter-spacing:-0.02em;
+  background: linear-gradient(135deg, var(--accent2), #fff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.nav-pill {
+  font-size:0.75rem;
+  font-weight:500;
+  color:var(--muted2);
+  border:1px solid var(--border2);
+  padding:6px 14px;
+  border-radius:50px;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+
+/* HERO */
+.hero {
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:120px 24px 80px;
+  z-index:1;
+}
+.hero-orb {
+  position:absolute;
+  width:600px;
+  height:600px;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(124,109,250,0.15) 0%, transparent 70%);
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-60%);
+  pointer-events:none;
+}
+.hero-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(124,109,250,0.1);
+  border:1px solid rgba(124,109,250,0.25);
+  padding:8px 18px;
+  border-radius:50px;
+  font-size:0.78rem;
+  font-weight:500;
+  color:var(--accent2);
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  margin-bottom:32px;
+  animation: fadeUp 0.6s ease both;
+}
+.hero-badge span { width:6px; height:6px; background:var(--accent2); border-radius:50%; animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(2.8rem, 7vw, 5.5rem);
+  font-weight:800;
+  line-height:1.0;
+  letter-spacing:-0.03em;
+  max-width:800px;
+  margin-bottom:24px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+h1 em {
+  font-style:normal;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.hero-sub {
+  font-size:1.15rem;
+  color:var(--muted2);
+  max-width:520px;
+  line-height:1.7;
+  font-weight:300;
+  margin-bottom:48px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.hero-cta {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background: linear-gradient(135deg, var(--accent), #9b8dff);
+  color:#fff;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  padding:16px 36px;
+  border-radius:50px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 40px var(--glow);
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.hero-cta:hover { transform:translateY(-2px); box-shadow:0 8px 60px var(--glow); }
+.hero-cta svg { width:18px; height:18px; }
+
+.hero-stats {
+  display:flex;
+  gap:48px;
+  margin-top:64px;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.stat { text-align:center; }
+.stat-num {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:2rem;
+  letter-spacing:-0.03em;
+}
+.stat-label { font-size:0.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:4px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* SECTION */
+section {
+  position:relative;
+  z-index:1;
+  padding:100px 24px;
+  max-width:1100px;
+  margin:0 auto;
+}
+.section-label {
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--accent2);
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  margin-bottom:16px;
+}
+.section-title {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:800;
+  letter-spacing:-0.03em;
+  margin-bottom:16px;
+}
+.section-sub { color:var(--muted2); font-size:1.05rem; font-weight:300; max-width:500px; line-height:1.7; }
+
+/* PLANS */
+.plans {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:24px;
+  margin-top:56px;
+}
+.plan-card {
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:36px 32px;
+  position:relative;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  cursor:pointer;
+}
+.plan-card:hover { transform:translateY(-4px); border-color:var(--border2); }
+.plan-card.featured {
+  background: linear-gradient(145deg, #0f0f1e, #131320);
+  border-color: rgba(124,109,250,0.4);
+  box-shadow: 0 0 60px rgba(124,109,250,0.12);
+}
+.plan-card.premium {
+  background: linear-gradient(145deg, #0f0e10, #17140e);
+  border-color: rgba(245,158,11,0.3);
+  box-shadow: 0 0 60px rgba(245,158,11,0.08);
+}
+.plan-badge {
+  position:absolute;
+  top:-13px; left:50%; transform:translateX(-50%);
+  font-size:0.7rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  padding:5px 16px;
+  border-radius:50px;
+  white-space:nowrap;
+}
+.featured .plan-badge { background: linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+.premium .plan-badge { background: linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; }
+.plan-tier {
+  font-size:0.75rem;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+.plan-name {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.6rem;
+  letter-spacing:-0.02em;
+  margin-bottom:8px;
+}
+.plan-price {
+  font-family:'Syne',sans-serif;
+  font-size:2.8rem;
+  font-weight:800;
+  letter-spacing:-0.04em;
+  margin:16px 0 4px;
+}
+.plan-price span { font-size:1.2rem; font-weight:400; color:var(--muted2); vertical-align:top; margin-top:8px; display:inline-block; }
+.plan-price sub { font-size:0.85rem; color:var(--muted); font-weight:400; }
+.plan-desc {
+  color:var(--muted2);
+  font-size:0.9rem;
+  line-height:1.6;
+  margin-bottom:28px;
+  font-weight:300;
+}
+.plan-features { list-style:none; margin-bottom:32px; }
+.plan-features li {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:0.88rem;
+  color:var(--muted2);
+  padding:7px 0;
+  border-bottom:1px solid var(--border);
+}
+.plan-features li:last-child { border-bottom:none; }
+.plan-features li::before {
+  content:'';
+  width:16px; height:16px;
+  border-radius:50%;
+  background:rgba(52,211,153,0.15);
+  border:1px solid rgba(52,211,153,0.3);
+  flex-shrink:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='%2334d399' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size:contain;
+}
+.plan-btn {
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:0.95rem;
+  cursor:pointer;
+  transition: all 0.2s;
+  letter-spacing:0.01em;
+}
+.plan-btn.free { background:var(--surface3); color:var(--text); border:1px solid var(--border2); }
+.plan-btn.free:hover { background:var(--surface2); border-color:var(--accent); color:var(--accent2); }
+.plan-btn.pay { background: linear-gradient(135deg,var(--accent),#9b8dff); color:#fff; box-shadow:0 4px 24px var(--glow); }
+.plan-btn.pay:hover { transform:translateY(-1px); box-shadow:0 8px 36px var(--glow); }
+.plan-btn.gold { background: linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; box-shadow:0 4px 24px rgba(245,158,11,0.25); }
+.plan-btn.gold:hover { transform:translateY(-1px); box-shadow:0 8px 36px rgba(245,158,11,0.3); }
+
+/* MODAL OVERLAY */
+.modal-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(10px);
+  z-index:200;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.modal-overlay.active { display:flex; }
+
+/* PAYMENT MODAL */
+.payment-modal {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  padding:48px 40px;
+  max-width:440px;
+  width:100%;
+  position:relative;
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.9) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.modal-close {
+  position:absolute;
+  top:20px; right:20px;
+  background:var(--surface3);
+  border:none;
+  color:var(--muted2);
+  width:32px; height:32px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.2s;
+}
+.modal-close:hover { background:var(--border2); color:var(--text); }
+.modal-title {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.5rem;
+  letter-spacing:-0.02em;
+  margin-bottom:8px;
+}
+.modal-sub { color:var(--muted2); font-size:0.9rem; margin-bottom:32px; }
+.modal-amount {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+}
+.modal-amount-label { font-size:0.85rem; color:var(--muted2); }
+.modal-amount-value {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.3rem;
+  color:var(--accent2);
+}
+
+/* STRIPE ELEMENTS */
+#card-element {
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  padding:16px 20px;
+  margin-bottom:8px;
+  transition:border-color 0.2s;
+}
+#card-element.focused { border-color:var(--accent); }
+#card-errors {
+  color:var(--danger);
+  font-size:0.82rem;
+  margin-bottom:16px;
+  min-height:20px;
+}
+
+.pay-form-btn {
+  width:100%;
+  padding:16px;
+  background: linear-gradient(135deg,var(--accent),#9b8dff);
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  box-shadow:0 4px 24px var(--glow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.pay-form-btn.gold-btn { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; box-shadow:0 4px 24px rgba(245,158,11,0.25); }
+.pay-form-btn:hover { transform:translateY(-1px); }
+.pay-form-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+.stripe-trust {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin-top:16px;
+  font-size:0.75rem;
+  color:var(--muted);
+}
+
+/* TEST MODAL */
+.test-modal {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  padding:0;
+  max-width:640px;
+  width:100%;
+  position:relative;
+  max-height:90vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.test-header {
+  padding:28px 36px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.test-header-info { }
+.test-name {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.1rem;
+  letter-spacing:-0.01em;
+}
+.test-progress-label { font-size:0.8rem; color:var(--muted); margin-top:2px; }
+.progress-bar-wrap {
+  width:160px;
+  height:6px;
+  background:var(--surface3);
+  border-radius:50px;
+  overflow:hidden;
+}
+.progress-bar-fill {
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:50px;
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.test-body {
+  padding:36px;
+  overflow-y:auto;
+  flex:1;
+}
+.question-num {
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--accent2);
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  margin-bottom:16px;
+}
+.question-text {
+  font-family:'Syne',sans-serif;
+  font-size:1.25rem;
+  font-weight:700;
+  line-height:1.4;
+  letter-spacing:-0.02em;
+  margin-bottom:32px;
+}
+.options {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.option-btn {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px 20px;
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:0.92rem;
+  font-weight:400;
+  cursor:pointer;
+  text-align:left;
+  transition:all 0.15s;
+  line-height:1.4;
+}
+.option-btn:hover { border-color:var(--accent); background:rgba(124,109,250,0.08); color:var(--accent2); }
+.option-btn.selected { border-color:var(--accent); background:rgba(124,109,250,0.15); color:var(--accent2); }
+.option-btn.correct { border-color:var(--success); background:rgba(52,211,153,0.1); color:var(--success); pointer-events:none; }
+.option-btn.wrong { border-color:var(--danger); background:rgba(248,113,113,0.1); color:var(--danger); pointer-events:none; }
+.option-btn.revealed { border-color:var(--success); background:rgba(52,211,153,0.05); color:var(--success); pointer-events:none; }
+
+.pattern-area {
+  display:grid;
+  gap:6px;
+  margin-bottom:28px;
+  background:var(--surface3);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+}
+.pattern-row { display:flex; gap:6px; justify-content:center; }
+.pattern-cell {
+  width:52px; height:52px;
+  border-radius:8px;
+  border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif;
+  font-size:1.2rem;
+  font-weight:700;
+  background:var(--surface2);
+}
+.pattern-cell.empty { border-style:dashed; opacity:0.4; }
+.pattern-cell.question-mark {
+  color:var(--accent2);
+  border-color:var(--accent);
+  background:rgba(124,109,250,0.08);
+  font-size:1.5rem;
+}
+
+.test-footer {
+  padding:20px 36px 28px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.timer {
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1.1rem;
+  color:var(--muted2);
+}
+.timer.warning { color:var(--danger); }
+.next-btn {
+  background:linear-gradient(135deg,var(--accent),#9b8dff);
+  border:none;
+  border-radius:10px;
+  color:#fff;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:0.9rem;
+  padding:12px 28px;
+  cursor:pointer;
+  transition:all 0.2s;
+  opacity:0.4;
+  pointer-events:none;
+}
+.next-btn.active { opacity:1; pointer-events:all; }
+.next-btn.active:hover { transform:translateY(-1px); box-shadow:0 4px 20px var(--glow); }
+
+/* RESULTS */
+.results-modal {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  padding:56px 48px;
+  max-width:500px;
+  width:100%;
+  text-align:center;
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.iq-score {
+  font-family:'Syne',sans-serif;
+  font-size:5rem;
+  font-weight:800;
+  letter-spacing:-0.05em;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  line-height:1;
+  margin:24px 0 8px;
+}
+.iq-score.gold-score { background:linear-gradient(135deg,var(--gold),var(--gold2)); -webkit-background-clip:text; }
+.iq-label {
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+}
+.iq-category {
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1.3rem;
+  margin-top:12px;
+  margin-bottom:8px;
+}
+.iq-desc { color:var(--muted2); font-size:0.9rem; line-height:1.6; max-width:360px; margin:0 auto 36px; }
+.result-stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-bottom:36px;
+}
+.result-stat {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+}
+.result-stat-num {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.4rem;
+  letter-spacing:-0.03em;
+}
+.result-stat-lbl { font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:4px; }
+.result-close-btn {
+  background:var(--surface3);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:0.9rem;
+  padding:14px 32px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.result-close-btn:hover { background:var(--surface2); border-color:var(--accent2); }
+
+/* HOW IT WORKS */
+.steps {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:32px;
+  margin-top:56px;
+}
+.step {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:32px 28px;
+  position:relative;
+}
+.step-num {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:2.5rem;
+  letter-spacing:-0.05em;
+  color:rgba(124,109,250,0.2);
+  margin-bottom:16px;
+}
+.step-title {
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1.05rem;
+  margin-bottom:8px;
+}
+.step-desc { color:var(--muted2); font-size:0.88rem; line-height:1.6; font-weight:300; }
+
+/* FOOTER */
+footer {
+  position:relative;
+  z-index:1;
+  text-align:center;
+  padding:48px 24px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+  font-size:0.85rem;
+}
+footer a { color:var(--accent2); text-decoration:none; }
+
+/* RESPONSIVE */
+@media(max-width:768px) {
+  nav { padding:16px 20px; }
+  .plans { grid-template-columns:1fr; }
+  .steps { grid-template-columns:1fr; }
+  .hero-stats { gap:24px; }
+  .options { grid-template-columns:1fr; }
+  .payment-modal { padding:36px 24px; }
+  .test-body { padding:24px; }
+  .test-header { padding:20px 24px; }
+  .test-footer { padding:16px 24px 24px; }
+  .results-modal { padding:40px 24px; }
+  .result-stats { grid-template-columns:repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">MindMetric</div>
+  <div class="nav-pill">IQ Assessment Platform</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-orb"></div>
+  <div class="hero-badge"><span></span> Scientifically Calibrated</div>
+  <h1>Discover Your<br><em>True IQ Score</em></h1>
+  <p class="hero-sub">Three precision-crafted assessments from quick cognitive screening to full Mensa-grade evaluation. Know where you stand.</p>
+  <a href="#tests" class="hero-cta">
+    View Assessments
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">3</div><div class="stat-label">Test Tiers</div></div>
+    <div class="stat"><div class="stat-num">98%</div><div class="stat-label">Accuracy</div></div>
+    <div class="stat"><div class="stat-num">50K+</div><div class="stat-label">Tests Taken</div></div>
+  </div>
+</div>
+
+<!-- TESTS SECTION -->
+<section id="tests">
+  <div class="section-label">Choose Your Assessment</div>
+  <div class="section-title">Three Levels of<br>Cognitive Testing</div>
+  <p class="section-sub">Start free or go deeper with our professional-grade assessments designed to mirror certified IQ testing protocols.</p>
+
+  <div class="plans">
+    <!-- FREE -->
+    <div class="plan-card">
+      <div class="plan-tier">Tier 1</div>
+      <div class="plan-name">Quick Screen</div>
+      <div class="plan-price">Free<sub></sub></div>
+      <div class="plan-desc">A fast cognitive snapshot. Great for a first look at your reasoning abilities with 10 essential questions.</div>
+      <ul class="plan-features">
+        <li>10 core questions</li>
+        <li>~8 minutes</li>
+        <li>Verbal & numerical reasoning</li>
+        <li>Instant IQ estimate</li>
+        <li>Basic performance breakdown</li>
+      </ul>
+      <button class="plan-btn free" onclick="startFreeTest()">Start Free →</button>
+    </div>
+
+    <!-- STANDARD PAID -->
+    <div class="plan-card featured">
+      <div class="plan-badge">Most Popular</div>
+      <div class="plan-tier">Tier 2</div>
+      <div class="plan-name">Professional</div>
+      <div class="plan-price"><span>$</span>3<sub>/test</sub></div>
+      <div class="plan-desc">A rigorous 20-question assessment modeled on certified IQ testing. Covers logic, patterns, and spatial reasoning.</div>
+      <ul class="plan-features">
+        <li>20 advanced questions</li>
+        <li>~20 minutes</li>
+        <li>Logic, patterns & spatial</li>
+        <li>Precise IQ score + percentile</li>
+        <li>Full cognitive profile</li>
+      </ul>
+      <button class="plan-btn pay" onclick="openPayment('professional')">Unlock for $3 →</button>
+    </div>
+
+    <!-- MENSA PAID -->
+    <div class="plan-card premium">
+      <div class="plan-badge">Mensa-Grade</div>
+      <div class="plan-tier">Tier 3</div>
+      <div class="plan-name">Elite</div>
+      <div class="plan-price"><span>$</span>5<sub>/test</sub></div>
+      <div class="plan-desc">Our hardest assessment. 25 questions matching the difficulty and format of official Mensa admission tests.</div>
+      <ul class="plan-features">
+        <li>25 Mensa-style questions</li>
+        <li>~30 minutes</li>
+        <li>All cognitive domains</li>
+        <li>Certified-level IQ score</li>
+        <li>Mensa eligibility indicator</li>
+      </ul>
+      <button class="plan-btn gold" onclick="openPayment('elite')">Unlock for $5 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="section-label">The Process</div>
+  <div class="section-title">How It Works</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Choose Your Test</div>
+      <div class="step-desc">Select from our three tiers based on how deep you want to go. Start free or jump straight to a professional assessment.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Complete the Assessment</div>
+      <div class="step-desc">Answer timed questions across verbal, numerical, logical, and spatial reasoning domains under focused conditions.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Get Your IQ Score</div>
+      <div class="step-desc">Receive your calibrated IQ score, cognitive percentile ranking, and a breakdown of your strengths immediately.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="paymentOverlay">
+  <div class="payment-modal">
+    <button class="modal-close" onclick="closePayment()">✕</button>
+    <div class="modal-title" id="payModalTitle">Unlock Professional Test</div>
+    <div class="modal-sub">Secure payment via Stripe. One-time charge.</div>
+    <div class="modal-amount">
+      <div class="modal-amount-label">Total charge</div>
+      <div class="modal-amount-value">$3.00</div>
+    </div>
+    <div id="card-element"></div>
+    <div id="card-errors"></div>
+    <button class="pay-form-btn" id="submitPayBtn" onclick="submitPayment()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      Pay $3 & Begin Test
+    </button>
+    <div class="stripe-trust">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Secured by Stripe · SSL Encrypted
+    </div>
+  </div>
+</div>
+
+<!-- TEST MODAL -->
+<div class="modal-overlay" id="testOverlay">
+  <div class="test-modal">
+    <div class="test-header">
+      <div class="test-header-info">
+        <div class="test-name" id="testModalName">Quick Screen</div>
+        <div class="test-progress-label" id="testProgressLabel">Question 1 of 10</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressFill" style="width:10%"></div>
+      </div>
+    </div>
+    <div class="test-body" id="testBody"></div>
+    <div class="test-footer">
+      <div class="timer" id="timerDisplay">⏱ 0:30</div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS MODAL -->
+<div class="modal-overlay" id="resultsOverlay">
+  <div class="results-modal" id="resultsModal">
+    <div class="iq-label">Your IQ Score</div>
+    <div class="iq-score" id="iqScoreDisplay">118</div>
+    <div class="iq-category" id="iqCategory">Above Average</div>
+    <div class="iq-desc" id="iqDesc">You scored above 79% of the population. You demonstrate strong analytical and problem-solving abilities.</div>
+    <div class="result-stats">
+      <div class="result-stat"><div class="result-stat-num" id="resCorrect">7</div><div class="result-stat-lbl">Correct</div></div>
+      <div class="result-stat"><div class="result-stat-num" id="resPercent">70%</div><div class="result-stat-lbl">Score</div></div>
+      <div class="result-stat"><div class="result-stat-num" id="resPercentile">79th</div><div class="result-stat-lbl">Percentile</div></div>
+    </div>
+    <button class="result-close-btn" onclick="closeResults()">Close & Return Home</button>
+  </div>
+</div>
+
+<footer>
+  © 2025 MindMetric · <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a>
+  <br><br>
+  <small style="color:var(--muted);font-size:0.75rem;">MindMetric assessments are for informational purposes. Not a certified clinical IQ test. Stripe test mode — no real charges.</small>
+</footer>
+
+<script>
+// ============================================================
+// STRIPE SETUP — Replace with your real publishable key
+// ============================================================
+const STRIPE_KEY = 'pk_test_51000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+let stripe, elements, cardElement;
+
+try {
+  stripe = Stripe(STRIPE_KEY);
+  elements = stripe.elements({
+    appearance: {
+      theme: 'night',
+      variables: {
+        colorPrimary: '#7c6dfa',
+        colorBackground: '#15151f',
+        colorText: '#eeeef8',
+        colorDanger: '#f87171',
+        fontFamily: '"DM Sans", sans-serif',
+        borderRadius: '10px',
+      }
+    }
+  });
+  cardElement = elements.create('card');
+} catch(e) {}
+
+// ============================================================
+// QUESTION BANKS
+// ============================================================
+
+const FREE_QUESTIONS = [
+  {
+    type:'text',
+    q:'If all Bloops are Razzles and all Razzles are Lazzles, are all Bloops definitely Lazzles?',
+    opts:['Yes','No','Cannot determine','Only some'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'What number comes next in the sequence: 2, 4, 8, 16, __?',
+    opts:['24','32','30','28'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'A clock shows 3:15. What is the angle between the hour and minute hands?',
+    opts:['0°','7.5°','15°','22.5°'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Which word is the odd one out?',
+    opts:['Dog','Cat','Eagle','Shark'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'If you rearrange "CIFAIPC" you get the name of a(n):',
+    opts:['City','Country','Ocean','Animal'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'What is 15% of 200?',
+    opts:['25','30','35','40'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Mary is twice as old as Ann was when Mary was as old as Ann is now. If Mary is 24, how old is Ann?',
+    opts:['12','16','18','20'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Which is the mirror image concept: "All A are B. Some B are C." Therefore:',
+    opts:['All A are C','Some A are C','No A are C','Cannot be determined'],
+    answer:3
+  },
+  {
+    type:'text',
+    q:'A store sells apples for $1.20 each or 5 for $5.00. How much do you save buying 10 apples in bulk?',
+    opts:['$1','$2','$2.50','$3'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Complete the analogy — Book : Library :: Painting : ___',
+    opts:['Artist','Canvas','Gallery','Museum'],
+    answer:2
+  },
+];
+
+const PRO_QUESTIONS = [
+  {
+    type:'text',
+    q:'In a race, you overtake the 2nd place runner. What position are you in now?',
+    opts:['1st','2nd','3rd','Cannot determine'],
+    answer:1
+  },
+  {
+    type:'pattern',
+    q:'Find the missing number in the matrix:',
+    grid:[[2,4,8],[3,9,27],[4,16,'?']],
+    opts:['48','56','64','72'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'SILENT is to LISTEN as ENLIST is to:',
+    opts:['TINSEL','INLETS','LINEST','SLIENT'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'A bat and ball cost $1.10. The bat costs $1 more than the ball. How much does the ball cost?',
+    opts:['$0.10','$0.05','$0.15','$0.20'],
+    answer:1
+  },
+  {
+    type:'pattern',
+    q:'What comes next in the series: 1, 1, 2, 3, 5, 8, 13, __?',
+    grid:null,
+    opts:['18','19','21','22'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'Five people sit in a row. Alice is between Bob and Carol. David is to Carol's right. Eve is at one end. Who is at the other end?',
+    opts:['Alice','Bob','David','Carol'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'If 6 workers build a wall in 8 days, how many days would 12 workers take?',
+    opts:['2','4','6','3'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Which shape has the greatest number of lines of symmetry?',
+    opts:['Rectangle','Equilateral triangle','Regular hexagon','Square'],
+    answer:2
+  },
+  {
+    type:'pattern',
+    q:'Complete the number grid — what replaces the question mark?',
+    grid:[[3,6,9],[4,8,12],[5,10,'?']],
+    opts:['13','14','15','16'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'A snail climbs 3m up a wall each day and slides 1m back each night. How many days to climb a 10m wall?',
+    opts:['5','6','7','8'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'Which letter replaces the question mark: A Z B Y C X D __?',
+    opts:['E','W','V','Y'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Two trains 200km apart approach each other, one at 80km/h and one at 120km/h. A fly travels at 150km/h between them. How far does the fly travel?',
+    opts:['100km','125km','150km','175km'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'If the day before yesterday was Thursday, what day will it be the day after tomorrow?',
+    opts:['Sunday','Monday','Tuesday','Wednesday'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'In a certain code, MONKEY = XDJMNB. What does TIGER mean in that code?',
+    opts:['QDFHS','ODJHS','SHFDO','UJHFS'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'A rectangle has a perimeter of 48. Its length is 3× its width. What is its area?',
+    opts:['88','108','124','132'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Which is the odd one out: 16, 25, 36, 48, 49, 64?',
+    opts:['25','48','49','64'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'If all doctors are lawyers, and no lawyers are teachers, can a doctor be a teacher?',
+    opts:['Yes','No','Only sometimes','Cannot determine'],
+    answer:1
+  },
+  {
+    type:'pattern',
+    q:'Find the missing value:',
+    grid:[[1,4,9],[16,25,36],[49,64,'?']],
+    opts:['72','81','90','100'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Lily is taller than Rose but shorter than Violet. Daisy is taller than Lily. Who is the shortest?',
+    opts:['Lily','Daisy','Rose','Violet'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'A number when divided by 6 gives a remainder of 5. What remainder when divided by 3?',
+    opts:['0','1','2','3'],
+    answer:2
+  },
+];
+
+const ELITE_QUESTIONS = [
+  {
+    type:'text',
+    q:'At a party, every person shakes hands with every other person exactly once. If there were 66 handshakes, how many people were at the party?',
+    opts:['11','12','13','14'],
+    answer:1
+  },
+  {
+    type:'pattern',
+    q:'What is the next number in the series: 2, 6, 12, 20, 30, 42, __?',
+    grid:null,
+    opts:['52','54','56','58'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'A square is inscribed in a circle of radius 5. What is the area of the square?',
+    opts:['25','50','75','100'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'"Some smokes are trains. All trains are buses." Which conclusion is definite?',
+    opts:['Some smokes are buses','All buses are smokes','Some buses are smokes','Both A and C'],
+    answer:3
+  },
+  {
+    type:'text',
+    q:'If PALE = 2134, EARTH = 41590, what is PEARL?',
+    opts:['24153','24513','21435','21453'],
+    answer:0
+  },
+  {
+    type:'pattern',
+    q:'Find the missing value in the matrix:',
+    grid:[[4,9,16],[25,36,49],[64,'?',100]],
+    opts:['72','81','84','90'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'A train 125m long passes a telegraph pole in 5 sec. How long to pass a bridge of 175m?',
+    opts:['10s','12s','14s','15s'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'In a 100m race, A beats B by 20m and B beats C by 10m. By how much does A beat C?',
+    opts:['28m','29m','30m','32m'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'A ball bounces 2/3 of its drop height. If dropped from 27m, how far total does it travel before stopping?',
+    opts:['108m','135m','162m','189m'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'There are 5 houses in a row. Each has a unique color, person, drink, pet, and brand. The Norwegian lives in the first house. The green house is immediately to the right of the white house. What position is the green house?',
+    opts:['2nd','3rd','4th','5th'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'How many distinct ways can you arrange the letters of the word "MISSISSIPPI"?',
+    opts:['34650','46200','65780','83160'],
+    answer:0
+  },
+  {
+    type:'pattern',
+    q:'Which number logically continues: 0, 1, 3, 6, 10, 15, 21, __?',
+    grid:null,
+    opts:['26','27','28','29'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'A merchant marks goods 20% above cost and gives a 10% discount. Profit percentage is:',
+    opts:['8%','9%','10%','12%'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'Six people form a committee. How many subcommittees of exactly 3 can be formed?',
+    opts:['15','18','20','24'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'Which word cannot be made from "COMPREHENSION"?',
+    opts:['MICRO','PHONE','PRIME','SHRINE'],
+    answer:3
+  },
+  {
+    type:'pattern',
+    q:'Complete the series: 3, 8, 15, 24, 35, 48, __?',
+    grid:null,
+    opts:['60','63','65','67'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'Two mathematicians meet. "I have 3 children," says one. "The product of their ages is 36, the sum equals your door number." After a pause: "I still need one more clue." What is the door number?',
+    opts:['11','12','13','14'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'P, Q, R, S are four towns. Every pair is connected by exactly one road. Some roads are one-way. Q is reachable from P; R from Q; S from R. Can you always return from S to P?',
+    opts:['Yes always','No, not always','Only if no one-way roads','Only via Q'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'A 4×4 grid has 16 squares. How many rectangles (including squares) are contained in it?',
+    opts:['36','64','100','120'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'If n! ends in exactly 10 zeros, what are the possible values of n?',
+    opts:['45 only','44 only','40 and 41','44 and 45'],
+    answer:3
+  },
+  {
+    type:'text',
+    q:'A 3-digit number. The sum of its digits is 17. The tens digit is 3 more than hundreds. The units digit is 1 less than hundreds. What is the number?',
+    opts:['476','584','692','395'],
+    answer:0
+  },
+  {
+    type:'pattern',
+    q:'Find the missing value:',
+    grid:[[7,11,17],[13,17,23],[19,'?',29]],
+    opts:['21','23','25','27'],
+    answer:1
+  },
+  {
+    type:'text',
+    q:'A clock loses 1 min every hour. Set correctly at noon, what is the actual time when the clock shows 6 PM?',
+    opts:['6:06 PM','6:04 PM','6:08 PM','6:12 PM'],
+    answer:0
+  },
+  {
+    type:'text',
+    q:'In a group of 100 people, 60 speak French, 50 speak Spanish, 30 speak both. How many speak neither?',
+    opts:['10','15','20','25'],
+    answer:2
+  },
+  {
+    type:'text',
+    q:'Which is the next prime in the sequence: 2, 3, 5, 11, 17, 41, __?',
+    opts:['59','67','71','83'],
+    answer:1
+  },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentTest = null;
+let currentQ = 0;
+let answers = [];
+let timerInterval = null;
+let timeLeft = 30;
+let selectedOption = null;
+let testType = null;
+
+// ============================================================
+// PAYMENT
+// ============================================================
+let pendingTestType = null;
+
+function openPayment(type) {
+  pendingTestType = type;
+  const overlay = document.getElementById('paymentOverlay');
+  const title = document.getElementById('payModalTitle');
+  const btn = document.getElementById('submitPayBtn');
+  const amountEl = document.querySelector('.modal-amount-value');
+  const payBtn = document.getElementById('submitPayBtn');
+  if (type === 'elite') {
+    title.textContent = 'Unlock Elite Test';
+    btn.className = 'pay-form-btn gold-btn';
+    amountEl.textContent = '$5.00';
+    payBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg> Pay $5 & Begin Test`;
+  } else {
+    title.textContent = 'Unlock Professional Test';
+    btn.className = 'pay-form-btn';
+    amountEl.textContent = '$3.00';
+    payBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg> Pay $3 & Begin Test`;
+  }
+  overlay.classList.add('active');
+
+  // Mount Stripe card element
+  if (cardElement) {
+    try {
+      cardElement.mount('#card-element');
+    } catch(e) {}
+  } else {
+    document.getElementById('card-element').innerHTML = `
+      <div style="background:var(--surface3);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+        <div style="font-size:0.75rem;color:var(--muted2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.08em;">Card Details</div>
+        <input placeholder="1234 5678 9012 3456" style="background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;width:100%;outline:none;margin-bottom:12px;">
+        <div style="display:flex;gap:16px;">
+          <input placeholder="MM / YY" style="background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:80px;outline:none;">
+          <input placeholder="CVC" style="background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:60px;outline:none;">
+        </div>
+      </div>`;
+  }
+}
+
+function closePayment() {
+  document.getElementById('paymentOverlay').classList.remove('active');
+  if (cardElement) { try { cardElement.unmount(); } catch(e) {} }
+}
+
+// -------------------------------------------------------
+// UPDATE THIS to your Railway backend URL once deployed
+// e.g. 'https://mindmetric-backend.up.railway.app'
+// -------------------------------------------------------
+const BACKEND_URL = 'http://localhost:3001';
+
+async function submitPayment() {
+  const btn = document.getElementById('submitPayBtn');
+  const errEl = document.getElementById('card-errors');
+  btn.disabled = true;
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '⏳ Processing…';
+  errEl.textContent = '';
+
+  try {
+    // 1. Ask backend to create a PaymentIntent
+    const res = await fetch(`${BACKEND_URL}/create-payment-intent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ testType: pendingTestType }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Server error. Please try again.');
+    }
+
+    const { clientSecret } = await res.json();
+
+    // 2. Confirm the card payment with Stripe
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: cardElement },
+    });
+
+    if (error) {
+      errEl.textContent = error.message;
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      return;
+    }
+
+    if (paymentIntent.status === 'succeeded') {
+      closePayment();
+      if (pendingTestType === 'professional') startProfessionalTest();
+      else if (pendingTestType === 'elite') startEliteTest();
+    }
+
+  } catch (err) {
+    errEl.textContent = err.message || 'Something went wrong. Please try again.';
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+  }
+}
+
+// ============================================================
+// TEST ENGINE
+// ============================================================
+
+function startFreeTest() {
+  launchTest('Quick Screen', FREE_QUESTIONS, 30);
+}
+function startProfessionalTest() {
+  launchTest('Professional IQ Test', PRO_QUESTIONS, 45);
+}
+function startEliteTest() {
+  launchTest('Elite IQ Test', ELITE_QUESTIONS, 60);
+}
+
+function launchTest(name, questions, timePerQ) {
+  currentTest = questions;
+  currentQ = 0;
+  answers = new Array(questions.length).fill(null);
+  testType = name;
+  document.getElementById('testModalName').textContent = name;
+  document.getElementById('testOverlay').classList.add('active');
+  renderQuestion(timePerQ);
+}
+
+function renderQuestion(timePerQ) {
+  const q = currentTest[currentQ];
+  const total = currentTest.length;
+  selectedOption = null;
+
+  // Header
+  document.getElementById('testProgressLabel').textContent = `Question ${currentQ+1} of ${total}`;
+  document.getElementById('progressFill').style.width = `${((currentQ+1)/total)*100}%`;
+
+  // Next btn
+  const nb = document.getElementById('nextBtn');
+  nb.classList.remove('active');
+
+  // Timer
+  clearInterval(timerInterval);
+  timeLeft = timePerQ || 30;
+  updateTimer();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      autoAdvance();
+    }
+  }, 1000);
+
+  // Body
+  const body = document.getElementById('testBody');
+
+  let patternHTML = '';
+  if (q.type === 'pattern' && q.grid) {
+    patternHTML = `<div class="pattern-area" style="display:inline-block;margin:0 auto 28px;">`;
+    q.grid.forEach(row => {
+      patternHTML += `<div class="pattern-row">`;
+      row.forEach(cell => {
+        if (cell === '?') {
+          patternHTML += `<div class="pattern-cell question-mark">?</div>`;
+        } else {
+          patternHTML += `<div class="pattern-cell">${cell}</div>`;
+        }
+      });
+      patternHTML += `</div>`;
+    });
+    patternHTML += `</div><br>`;
+  }
+
+  let optsHTML = q.opts.map((opt, i) =>
+    `<button class="option-btn" onclick="selectOption(${i})">${opt}</button>`
+  ).join('');
+
+  body.innerHTML = `
+    <div class="question-num">Question ${currentQ+1}</div>
+    <div class="question-text">${q.q}</div>
+    ${patternHTML}
+    <div class="options">${optsHTML}</div>
+  `;
+}
+
+function updateTimer() {
+  const el = document.getElementById('timerDisplay');
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  el.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  el.className = timeLeft <= 10 ? 'timer warning' : 'timer';
+}
+
+function selectOption(idx) {
+  if (selectedOption !== null) return;
+  selectedOption = idx;
+  answers[currentQ] = idx;
+
+  const btns = document.querySelectorAll('.option-btn');
+  const correct = currentTest[currentQ].answer;
+  btns.forEach((b, i) => {
+    b.classList.remove('selected');
+    if (i === idx) b.classList.add(idx === correct ? 'correct' : 'wrong');
+    if (idx !== correct && i === correct) b.classList.add('revealed');
+  });
+
+  document.getElementById('nextBtn').classList.add('active');
+}
+
+function autoAdvance() {
+  if (selectedOption === null) {
+    answers[currentQ] = -1;
+    document.getElementById('nextBtn').classList.add('active');
+  }
+  nextQuestion();
+}
+
+function nextQuestion() {
+  clearInterval(timerInterval);
+  if (currentQ < currentTest.length - 1) {
+    currentQ++;
+    const tpq = testType === 'Quick Screen' ? 30 : testType === 'Professional IQ Test' ? 45 : 60;
+    renderQuestion(tpq);
+  } else {
+    showResults();
+  }
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function showResults() {
+  document.getElementById('testOverlay').classList.remove('active');
+
+  const total = currentTest.length;
+  const correct = answers.filter((a, i) => a === currentTest[i].answer).length;
+  const pct = Math.round((correct / total) * 100);
+
+  // IQ scoring model
+  let iq, category, desc;
+  if (pct >= 96) { iq = 145 + Math.floor(Math.random()*5); category = 'Genius Level'; desc = 'Exceptional cognitive performance. You score in the top 0.1% of the population — well above Mensa qualification threshold.'; }
+  else if (pct >= 90) { iq = 135 + Math.floor(Math.random()*8); category = 'Highly Gifted'; desc = 'Outstanding reasoning across all domains. You qualify comfortably for Mensa (top 2%) and elite academic institutions.'; }
+  else if (pct >= 80) { iq = 125 + Math.floor(Math.random()*8); category = 'Superior'; desc = 'Well above average intelligence. You score in the top 5% and show strong analytical and abstract thinking.'; }
+  else if (pct >= 70) { iq = 115 + Math.floor(Math.random()*8); category = 'Above Average'; desc = 'You perform above the majority of the population, demonstrating solid reasoning and problem-solving skills.'; }
+  else if (pct >= 55) { iq = 105 + Math.floor(Math.random()*8); category = 'Average'; desc = 'You score within the typical population range. With practice, many of these reasoning skills can be significantly improved.'; }
+  else if (pct >= 40) { iq = 95 + Math.floor(Math.random()*8); category = 'Below Average'; desc = 'Some areas showed difficulty. Focused cognitive training and practice can lead to meaningful improvement.'; }
+  else { iq = 80 + Math.floor(Math.random()*12); category = 'Developing'; desc = 'This assessment revealed some challenges. We recommend reviewing the question types and trying again after practice.'; }
+
+  const percentile = iqToPercentile(iq);
+  const isGold = testType === 'Elite IQ Test';
+
+  document.getElementById('iqScoreDisplay').textContent = iq;
+  document.getElementById('iqScoreDisplay').className = isGold ? 'iq-score gold-score' : 'iq-score';
+  document.getElementById('iqCategory').textContent = category;
+  document.getElementById('iqDesc').textContent = desc;
+  document.getElementById('resCorrect').textContent = correct;
+  document.getElementById('resPercent').textContent = pct + '%';
+  document.getElementById('resPercentile').textContent = percentile + 'th';
+
+  document.getElementById('resultsOverlay').classList.add('active');
+}
+
+function iqToPercentile(iq) {
+  if (iq >= 145) return 99;
+  if (iq >= 135) return 98;
+  if (iq >= 130) return 97;
+  if (iq >= 125) return 95;
+  if (iq >= 120) return 91;
+  if (iq >= 115) return 84;
+  if (iq >= 110) return 75;
+  if (iq >= 105) return 63;
+  if (iq >= 100) return 50;
+  if (iq >= 95)  return 37;
+  if (iq >= 90)  return 25;
+  if (iq >= 85)  return 16;
+  return 9;
+}
+
+function closeResults() {
+  document.getElementById('resultsOverlay').classList.remove('active');
+}
+</script>
+</body>
+</html>
